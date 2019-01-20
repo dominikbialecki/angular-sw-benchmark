@@ -2,7 +2,6 @@ import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {MatPaginator, MatSort, MatTableDataSource} from '@angular/material';
 import {CommentsService} from '../../api/services/comments.service';
 import {Comment} from '../../api/models/comment';
-import {HttpParams} from '@angular/common/http';
 import {RouterService} from '../../shared/router.service';
 import {BehaviorSubject, merge, Subject} from 'rxjs';
 import {debounceTime, takeUntil} from 'rxjs/operators';
@@ -30,9 +29,6 @@ export class ApiComputationsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscribeToDataFiltersChanges();
-    this.dataSource.sort = this.sort;
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.filterPredicate = ((data, filter) => data.email ? data.email.includes(filter) : false);
     this.getComments();
   }
 
@@ -42,7 +38,11 @@ export class ApiComputationsComponent implements OnInit, OnDestroy {
         takeUntil(this.onDestroy$),
         debounceTime(200)
       )
-      .subscribe(() => this.setQueryParams(this.getQueryParams()));
+      .subscribe(() => {
+        const queryParams = this.getQueryParams();
+        this.setQueryParams(queryParams);
+        this.getComments(queryParams);
+      });
 
   }
 
@@ -59,7 +59,7 @@ export class ApiComputationsComponent implements OnInit, OnDestroy {
     this.routerService.setQueryParams(queryParams);
   }
 
-  private getComments(params?: HttpParams) {
+  private getComments(params?) {
     this.commentsService.getComments(params).subscribe(
       (comments: Comment[]) => this.dataSource.data = comments,
       (e) => console.error(e)
@@ -68,7 +68,6 @@ export class ApiComputationsComponent implements OnInit, OnDestroy {
 
   applyFilter(filterValue: string) {
     this.filterChanges$.next(filterValue);
-    this.dataSource.filter = filterValue;
   }
 
   goToAppComments() {
