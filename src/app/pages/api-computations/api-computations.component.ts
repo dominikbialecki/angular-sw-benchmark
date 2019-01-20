@@ -1,37 +1,62 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {MatPaginator, MatSort, MatTableDataSource} from '@angular/material';
 import {CommentsService} from '../../api/services/comments.service';
 import {Comment} from '../../api/models/comment';
 import {HttpParams} from '@angular/common/http';
-import {Router} from '@angular/router';
+import {RouterService} from '../../shared/router.service';
+import {BehaviorSubject, merge, Subject} from 'rxjs';
+import {debounceTime, takeUntil} from 'rxjs/operators';
+import {Params} from '@angular/router';
 
 @Component({
   selector: 'app-api-computations',
   templateUrl: './api-computations.component.html',
   styleUrls: ['./api-computations.component.scss']
 })
-export class ApiComputationsComponent implements OnInit {
+export class ApiComputationsComponent implements OnInit, OnDestroy {
 
   @ViewChild(MatSort) sort: MatSort;
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  private onDestroy$ = new Subject();
+  private filterChanges$ = new BehaviorSubject<String>('');
 
   displayedColumns: string[] = ['email', 'name', 'body'];
   dataSource = new MatTableDataSource<Comment>();
 
-  applyFilter(filterValue: string) {
-    this.dataSource.filter = filterValue;
-  }
-
   constructor(private commentsService: CommentsService,
-              private router: Router,
+              private routerService: RouterService,
   ) {
   }
 
   ngOnInit() {
+    this.subscribeToDataFiltersChanges();
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
     this.dataSource.filterPredicate = ((data, filter) => data.email ? data.email.includes(filter) : false);
     this.getComments();
+  }
+
+  private subscribeToDataFiltersChanges() {
+    merge(this.paginator.page, this.sort.sortChange, this.filterChanges$)
+      .pipe(
+        takeUntil(this.onDestroy$),
+        debounceTime(200)
+      )
+      .subscribe(() => this.setQueryParams(this.getQueryParams()));
+
+  }
+
+  private getQueryParams() {
+    return {
+      page: this.paginator.pageIndex || undefined,
+      pageSize: this.paginator.pageSize || undefined,
+      order: this.sort.direction || undefined,
+      email: this.filterChanges$.getValue() || undefined
+    };
+  }
+
+  private setQueryParams(queryParams: Params) {
+    this.routerService.setQueryParams(queryParams);
   }
 
   private getComments(params?: HttpParams) {
@@ -41,7 +66,16 @@ export class ApiComputationsComponent implements OnInit {
     );
   }
 
+  applyFilter(filterValue: string) {
+    this.filterChanges$.next(filterValue);
+    this.dataSource.filter = filterValue;
+  }
+
   goToAppComments() {
-    this.router.navigateByUrl('app/comments');
+    this.routerService.goToAppComputationsComments();
+  }
+
+  ngOnDestroy(): void {
+    this.onDestroy$.next();
   }
 }

@@ -3,7 +3,7 @@ import {MatPaginator, MatSort, MatTableDataSource} from '@angular/material';
 import {Comment} from '../../api/models/comment';
 import {CommentsService} from '../../api/services/comments.service';
 import {HttpParams} from '@angular/common/http';
-import {Router} from '@angular/router';
+import {RouterService} from '../../shared/router.service';
 
 @Component({
   selector: 'app-app-computations',
@@ -24,7 +24,7 @@ export class AppComputationsComponent implements OnInit {
 
 
   constructor(private commentsService: CommentsService,
-              private router: Router,
+              private routerService: RouterService,
   ) {
   }
 
@@ -43,6 +43,6 @@ export class AppComputationsComponent implements OnInit {
   }
 
   goToApiComments() {
-    this.router.navigateByUrl('api/comments');
+    this.routerService.goToApiComputationsComments();
   }
 }
