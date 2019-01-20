@@ -138,5 +138,12 @@
       }
     }
   },
-  "defaultProject": "sw-benchmark"
+  "defaultProject": "sw-benchmark",
+  "schematics": {
+    "@schematics/angular": {
+      "component": {
+        "spec": false
+      }
+    }
+  }
 }
