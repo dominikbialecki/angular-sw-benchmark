@@ -1,1 +1,27 @@
 /* You can add global styles to this file, and also import other style files */
+@import '~@angular/material/prebuilt-themes/indigo-pink.css';
+
+.d-flex {
+  display: flex;
+  flex-direction: row;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+.filter-input {
+  min-width: 400px;
+}
+
+.mb-5px {
+  margin-bottom: 5px;
+}
+
+.align-self-center {
+  align-self: center;
+}
+
+.clickable {
+  cursor: pointer;
+}

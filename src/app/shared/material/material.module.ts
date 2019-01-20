@@ -1,10 +1,19 @@
 import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {MatPaginatorModule, MatSortModule, MatTableModule} from '@angular/material';
+
+const MODULES = [
+  MatTableModule,
+  MatSortModule,
+  MatPaginatorModule,
+];
 
 @NgModule({
   declarations: [],
   imports: [
-    CommonModule
+    ...MODULES,
+  ],
+  exports: [
+    ...MODULES,
   ]
 })
 export class MaterialModule {
